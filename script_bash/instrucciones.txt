@@ -1,0 +1,1 @@
+Los dos archivos tienen diferentes utilidades para la modificación de las reglas de un cortafuego ufw, uno comprueba la dirección ipv6 dinámica y el otro hace el cambio en el cortafuegos. 
