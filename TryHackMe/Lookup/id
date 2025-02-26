@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "uid=33(think) gid=33(think) groups=33(think)"
+

