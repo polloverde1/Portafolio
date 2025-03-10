@@ -1,0 +1,1 @@
+Algunas practicas no pude realizar el levantamiento de los servicios debido a la falta de equipo, pero pude lograr hacer el levantamiento de servicios virtualmente.
